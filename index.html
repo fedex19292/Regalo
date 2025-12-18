@@ -2,366 +2,234 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Il Tuo Itinerario Interattivo: Dal Kent ai Cotswolds</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Un Regalo per Ambra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@300;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-main: #f8fafc;
-            --bg-card: #ffffff;
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --accent-primary: #0d9488; /* Teal-600 */
-            --accent-secondary: #f97316;
-            --border-color: #e2e8f0;
+            --rosso-natale: #bc1b1b;
+            --oro: #d4af37;
+            --bianco: #ffffff;
+            --grigio-gratta: #C0C0C0;
         }
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: var(--bg-main);
-            color: var(--text-primary);
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            font-family: 'Montserrat', sans-serif;
+            background-color: #7a0000;
+            color: var(--bianco);
+            overflow-x: hidden;
+            touch-action: manipulation;
         }
-        h1, h2, h3 { font-family: 'Lora', serif; font-weight: 600; }
-        .map-container { position: relative; width: 100%; height: 500px; border-radius: 0.75rem; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        #map { height: 100%; width: 100%; }
-        .tab-button { transition: all 0.3s ease; }
-        .tab-button.active { color: var(--accent-primary); border-color: var(--accent-primary); background-color: #f0fdfa; /* Teal-50 */ }
-        .tab-button:not(.active):hover { color: var(--accent-primary); border-color: #cbd5e1; }
-        .content-panel { display: none; animation: fadeIn 0.5s; }
-        .content-panel.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .driving-bar {
-            background-color: var(--accent-primary);
-            transition: all 0.3s ease;
+
+        .main-container {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                        url('https://cdn.pixabay.com/photo/2022/11/07/17/41/christmas-trees-7576912_640.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
         }
-        .driving-bar:hover {
-            filter: brightness(1.1);
+
+        h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+        }
+
+        /* Nevicata */
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            color: white;
+            font-size: 1em;
+            z-index: 1000;
+            pointer-events: none;
+            animation: fall linear forwards;
+        }
+        @keyframes fall { to { transform: translateY(105vh); } }
+
+        /* Pagina 1 */
+        .gift-box {
+            width: 60vw;
+            max-width: 300px;
+            cursor: pointer;
+            filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.6));
+            animation: pulse 2s infinite ease-in-out;
+        }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+        /* Pagina 2: Gratta e Vinci */
+        #page2 { display: none; width: 100%; max-width: 1000px; }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        /* Contenitore per il Gratta e Vinci */
+        .scratch-container {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            margin: 0 auto;
+            border: 4px solid var(--oro);
+            border-radius: 15px;
+            overflow: hidden;
+            background-color: #fff;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .scratch-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .scratch-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: crosshair;
+            touch-action: none; /* Impedisce lo scroll mentre si gratta */
+        }
+
+        .heart { color: #ff4d4d; }
+
+        button {
+            margin-top: 40px;
+            background: var(--oro);
+            color: #333;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .instruzioni {
+            font-style: italic;
+            margin-bottom: 10px;
+            color: var(--oro);
         }
     </style>
 </head>
-<body class="antialiased">
-    <!-- Chosen Palette: Sophisticated Teal & Orange -->
-    <!-- Application Structure Plan: The application is structured as a single-page dashboard. The initial view provides a high-level overview with a map. Below, a dedicated "Logistics" section groups driving times and accommodations. This "dashboard" approach allows the user to grasp the entire trip at a glance. For detailed exploration, a tab-based navigation system is used for the daily itinerary. Clicking a day's tab dynamically displays only that day's content, preventing information overload from a long scroll. This structure was chosen for its superior usability and modern SPA feel compared to a simple list or accordion. -->
-    <!-- Visualization & Content Choices: 
-        - Map (Leaflet.js): Goal: Organize/Relationships. An interactive map shows all key locations and the travel route. Interaction: Markers are clickable for quick info. Justification: A map is essential for a road trip itinerary.
-        - Driving Times Visualization (HTML/CSS): Goal: Compare/Inform. Replaced the unreadable bar chart with a custom, horizontal bar visualization. This is far more readable and visually appealing ("cooler"). Interaction: Hover effect on bars. Justification: Superior readability and custom look compared to a standard chart library for this specific data.
-        - Tabbed Itinerary (HTML/CSS/JS): Goal: Inform/Organize. The detailed daily plan is presented in tabs. This structures a large amount of text into manageable, user-selectable chunks. Added image galleries and emojis for visual context. Interaction: Clicking tabs shows/hides content. Justification: This is a standard, highly usable pattern for organizing detailed content in an SPA.
-        - Accommodation Table (HTML/Tailwind): Goal: Inform. A clear, sortable table provides a quick reference for all hotel details. Justification: A table is the best format for this type of structured data.
-    -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+<body>
 
-    <div class="min-h-screen bg-slate-50">
-        <header class="bg-white shadow-sm">
-            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center">
-                <h1 class="text-4xl font-bold text-slate-900 tracking-tight">Il Tuo Viaggio Fottutamente Epico in Inghilterra 🇬🇧</h1>
-                <p class="mt-2 text-lg text-slate-600">Un'avventura on-the-road di 9 giorni dal Kent ai Cotswolds</p>
-            </div>
-        </header>
+    <div class="main-container">
+        <div id="page1">
+            <h1>Per Ambra<br><span class="heart">❤</span></h1>
+            <p>Clicca sul pacco per scoprire il tuo regalo</p>
+            <img src="foto4.png" alt="Pacco Regalo" class="gift-box" onclick="revealGift()">
+        </div>
 
-        <main class="py-10">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                
-                <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg mb-10">
-                    <h2 class="text-2xl font-bold mb-4">La Mappa del Viaggio 🗺️</h2>
-                    <p class="text-slate-600 mb-6">Esplora il tuo percorso completo. Clicca sui segnaposto sulla mappa per vedere i dettagli di ogni luogo e la linea arancione per seguire il tuo itinerario on-the-road.</p>
-                    <div class="map-container">
-                        <div id="map"></div>
-                    </div>
+        <div id="id-del-regalo" style="display:none;">
+            <h1>Buon Natale Ambra! <span class="heart">❤</span></h1>
+            <p class="instruzioni">Passa il dito sulle foto per grattare e scoprire...</p>
+            
+            <div class="gallery">
+                <div class="scratch-container">
+                    <img src="foto1.png">
+                    <canvas class="scratch-canvas" width="280" height="280"></canvas>
                 </div>
-                
-                <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg mb-10">
-                    <h2 class="text-2xl font-bold mb-4">Riepilogo Logistico 🚗💨</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mt-6">
-                        <div>
-                            <h3 class="text-xl font-semibold mb-4 text-slate-800">Tempi di Guida Stimati</h3>
-                            <div id="driving-times-container" class="space-y-4 pr-4">
-                            </div>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-semibold mb-4 text-slate-800">Alloggi Previsti 🏨</h3>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-slate-200">
-                                    <thead class="bg-slate-50">
-                                        <tr>
-                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Giorno</th>
-                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Hotel</th>
-                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Luogo</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-slate-200" id="accommodation-table-body">
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+                <div class="scratch-container">
+                    <img src="foto2.png">
+                    <canvas class="scratch-canvas" width="280" height="280"></canvas>
                 </div>
-
-                <div class="bg-white rounded-xl shadow-lg">
-                    <div class="p-6 sm:p-8">
-                        <h2 class="text-2xl font-bold mb-4">Itinerario Dettagliato 📜</h2>
-                        <p class="text-slate-600 mb-6">Seleziona un giorno per esplorare le attività, le attrazioni e i consigli per ogni tappa del tuo viaggio.</p>
-                        <div class="border-b border-slate-200">
-                            <nav class="-mb-px flex space-x-4 overflow-x-auto" aria-label="Tabs" id="tab-navigation">
-                            </nav>
-                        </div>
-                    </div>
-                    <div class="p-6 sm:p-8" id="content-container">
-                    </div>
+                <div class="scratch-container">
+                    <img src="foto3.png">
+                    <canvas class="scratch-canvas" width="280" height="280"></canvas>
                 </div>
-
+                <div class="scratch-container">
+                    <img src="foto5.png">
+                    <canvas class="scratch-canvas" width="280" height="280"></canvas>
+                </div>
             </div>
-        </main>
-        
-        <footer class="bg-white mt-12">
-            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-slate-500">
-                <p>&copy; 2025 Itinerario by Ambra e Federico. Buon Viaggio!</p>
-            </div>
-        </footer>
+            
+            <button onclick="location.reload()">Ricarica Pagina</button>
+        </div>
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const itineraryData = [
-            {
-                day: 1,
-                date: "Venerdì 12/09",
-                title: "Arrivo nel Kent ✈️🍺",
-                summary: "Dalla frenesia di Heathrow alla tradizione della birra nel 'Giardino d'Inghilterra'.",
-                accommodation: { name: "Twentieth Century B&B", location: "Whitstable" },
-                driving: { from: "Heathrow", to: "Whitstable", time: 110 },
-                content: `<div class="space-y-6"><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Logistica e Trasferimento</h3><ul class="list-disc list-inside space-y-2 text-slate-700"><li><strong>09:00:</strong> Atterraggio a <strong>Londra Heathrow (LHR)</strong>, ritiro auto e partenza.</li><li><strong>Trasferimento a Whitstable:</strong> Viaggio di circa 120-140 km. Tempo stimato: <strong>1h 45m - 2h 20m</strong>, a seconda del traffico sulla M25.</li></ul></div><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Pomeriggio: Esplorazione e Alloggio</h3><p class="text-slate-700">Check-in al <strong>Twentieth Century B&B</strong>. Un'esperienza di design unica, con camere a tema che celebrano il XX secolo. Pomeriggio libero per una prima passeggiata a Whitstable, famosa per le ostriche.</p></div><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Sera: Tour e Cena alla Shepherd Neame Brewery</h3><p class="text-slate-700">Visita al birrificio più antico della Gran Bretagna (fondato nel 1698). Il tour guidato di 80 minuti include una degustazione e una cena di due portate. Un'immersione totale nella cultura del luppolo del Kent.</p></div></div>`,
-                images: [
-                    { src: 'https://a.travel-assets.com/findyours-php/viewfinder/images/res70/120000/120791-Whitstable-Harbour.jpg', alt: 'Il caratteristico porto di Whitstable' },
-                    { src: 'https://www.shepherdneame.co.uk/sites/default/files/2019-01/Shepherd%20Neame%20brewery%20%2811%29.jpg', alt: 'La storica birreria Shepherd Neame' }
-                ]
-            },
-            {
-                day: 2,
-                date: "Sabato 13/09",
-                title: "Costa del Kent 📚🌊",
-                summary: "Un tour tra cultura, scogliere iconiche e cittadine storiche.",
-                accommodation: { name: "Twentieth Century B&B", location: "Whitstable" },
-                driving: { from: "Whitstable", to: "Margate > Deal", time: 80 },
-                content: `<div class="space-y-6"><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Mattina: Margate e Botany Bay</h3><ul class="list-disc list-inside space-y-2 text-slate-700"><li>Visita a <strong>Margate</strong>, vivace centro culturale. Tappa obbligatoria alla <strong>Margate Bookshop</strong>.</li><li>Escursione a <strong>Botany Bay</strong> per ammirare le spettacolari scogliere di gesso. <strong>Consiglio:</strong> controlla gli orari delle maree per goderti la spiaggia al meglio.</li></ul></div><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Pomeriggio: Sandwich e Deal</h3><p class="text-slate-700">Breve esplorazione delle storiche cittadine di <strong>Sandwich</strong> e <strong>Deal</strong>, parte dell'antica confederazione dei "Cinque Ports", ricche di architettura medievale.</p></div><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Sera</h3><p class="text-slate-700">Rientro a Whitstable per cena e pernottamento.</p></div></div>`,
-                images: [
-                    { src: 'https://www.mirygiramondo.com/wp-content/uploads/2020/05/botany-bay.jpg', alt: 'Le scogliere di gesso di Botany Bay' },
-                    { src: 'https://media.shelf-awareness.com/theshelf/2019_Edit_Content/margate_bookshop_fb_062319.jpg', alt: 'La facciata della Margate Bookshop' }
-                ]
-            },
-            {
-                day: 3,
-                date: "Domenica 14/09",
-                title: "I Guardiani della Manica 🏰🛡️",
-                summary: "Un viaggio nella storia militare, dal potere medievale di Dover all'ingegneria dei Tudor a Deal.",
-                accommodation: { name: "The Rose", location: "Deal" },
-                driving: { from: "Whitstable", to: "Dover > Deal", time: 60 },
-                content: `<div class="space-y-6"><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Mattina: Castello di Dover</h3><p class="text-slate-700">Check-out e partenza per Dover. Visita all'imponente <strong>Castello di Dover</strong>, la "Chiave d'Inghilterra". Da non perdere il Grande Maschio, il faro romano e i tunnel segreti dell'Operazione Dynamo.</p></div><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Pomeriggio: Castello di Deal</h3><p class="text-slate-700">Visita al <strong>Castello di Deal</strong>, il più grande forte di artiglieria di Enrico VIII, con la sua inconfondibile forma a rosa Tudor. Un capolavoro di ingegneria militare del XVI secolo.</p></div><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Sera e Alloggio</h3><p class="text-slate-700">Check-in a <strong>The Rose</strong>, un boutique hotel di charme ricavato in un pub storico nel cuore di Deal. <strong>Nota:</strong> l'hotel non ha parcheggio privato.</p></div></div>`,
-                images: [
-                    { src: 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/08/86/93/40/dover-castle.jpg?w=800&h=-1&s=1', alt: 'Il maestoso Castello di Dover' },
-                    { src: 'https://englandscoast.com/inc/img/cache/media/501520_1565794578-image(1500x500-crop).jpg', alt: 'Il Castello di Deal dall\'alto' }
-                ]
-            },
-            {
-                day: 4,
-                date: "Lunedì 15/09",
-                title: "Avventura Safari 🦒🦁",
-                summary: "Un'immersione totale nel mondo animale con un pernottamento indimenticabile.",
-                accommodation: { name: "Port Lympne Safari Park", location: "Port Lympne" },
-                driving: { from: "Deal", to: "Port Lympne", time: 40 },
-                content: `<div class="space-y-6"><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Intera Giornata: Port Lympne Safari Park</h3><p class="text-slate-700">Giornata interamente dedicata all'esplorazione della riserva di 600 acri. Partecipa al safari in camion per avvistare giraffe, zebre e rinoceronti, e non perderti la <strong>Dinosaur Forest</strong>.</p></div><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Notte: Dormire con gli Animali</h3><p class="text-slate-700">L'esperienza culmina con un pernottamento unico all'interno del parco. Soggiornare qui supporta direttamente i progetti di conservazione della <strong>The Aspinall Foundation</strong>.</p></div></div>`,
-                images: [
-                    { src: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhGZhr_ZgNs4n-fxdBL9JYQDzZUsWUfl-Hs2ylmE4AOVEKcURwIjW7p1gIKRt_WaimhiD1FRtj9PI2_imIujqF5zZxV4tRWTupj4kusoWudc4S2M5IPjEkpPusWRnoBi6lyZry0IlScjOk/s1600/panda+rosso.jpg', alt: 'Panda Rosso al Port Lympne Safari Park' },
-                    { src: 'https://www.aspinallfoundation.org/media/7074/pl-ll-1131.jpg?anchor=center&mode=crop&quality=75&width=934&height=495&rnd=133160144410000000', alt: 'Vista dal Tiger Lodge' }
-                ]
-            },
-            {
-                day: 5,
-                date: "Martedì 16/09",
-                title: "Le Seven Sisters 🏞️📸",
-                summary: "Dalla natura selvaggia del safari alla maestosità geologica della costa del Sussex.",
-                accommodation: { name: "Port Hotel", location: "Eastbourne" },
-                driving: { from: "Port Lympne", to: "Seven Sisters", time: 90 },
-                content: `<div class="space-y-6"><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Esplorazione delle Seven Sisters Cliffs</h3><p class="text-slate-700">Trekking lungo uno dei paesaggi più iconici d'Inghilterra. Queste scogliere di gesso incontaminate sono spesso usate come "controfigura" cinematografica delle scogliere di Dover.</p><ul class="list-disc list-inside space-y-2 text-slate-700 mt-4"><li><strong>Punto di partenza:</strong> Seven Sisters Country Park.</li><li><strong>Vista iconica:</strong> Passeggiata fino ai <strong>Coastguard Cottages</strong>.</li><li><strong>Panorama mozzafiato:</strong> Guida fino a <strong>Beachy Head</strong>, il promontorio di gesso più alto della Gran Bretagna.</li></ul></div><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Sera e Alloggio</h3><p class="text-slate-700">Pernottamento al <strong>Port Hotel</strong> di Eastbourne, un boutique hotel di design sul lungomare, acclamato dalla critica per il suo stile e la sua cucina a km 0.</p></div></div>`,
-                images: [
-                    { src: 'https://images.ngs.org.uk/46152%20(01).jpg', alt: 'I Coastguard Cottages e le Seven Sisters' },
-                    { src: 'https://eu-assets.simpleview-europe.com/eastbourne/imageresizer/?image=%2Fdmsimgs%2FBeachy_Head_please_credit_visiteastbourne_1615501081.jpg&action=ProductDetailProFullWidth', alt: 'Il faro di Beachy Head' }
-                ]
-            },
-            {
-                day: 6,
-                date: "Mercoledì 17/09",
-                title: "Vibrante Brighton 🎡🍸",
-                summary: "Un mix eclettico di opulenza storica, cultura artigianale e passioni personali.",
-                accommodation: { name: "The Crown Hotel", location: "Lyndhurst" },
-                driving: { from: "Eastbourne", to: "Brighton > Lyndhurst", time: 130 },
-                content: `<div class="space-y-6"><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Le Tue Tappe a Brighton</h3><ul class="list-disc list-inside space-y-2 text-slate-700"><li><strong>Brighton Gin Distillery:</strong> Tour e degustazione nella prima distilleria della città.</li><li><strong>Royal Pavilion:</strong> Visita a questo incredibile palazzo fiabesco in stile Indo-Saraceno.</li><li><strong>Knoops:</strong> Pausa golosa nel tempio della cioccolata calda personalizzabile.</li><li><strong>Dice Saloon:</strong> Un tuffo nella cultura dei giochi da tavolo in un grande caffè dedicato.</li></ul></div><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Sera e Alloggio</h3><p class="text-slate-700">Trasferimento nella New Forest per un cambio di scenario. Pernottamento a <strong>The Crown Hotel</strong> a Lyndhurst, un affascinante hotel storico del XV secolo.</p></div></div>`,
-                images: [
-                    { src: 'https://upload.wikimedia.org/wikipedia/commons/7/7f/Brighton_royal_pavilion_Qmin.jpg', alt: 'L\'eccentrico Royal Pavilion di Brighton' },
-                    { src: 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2a/54/a5/e9/stacked-shelves-in-our.jpg?w=1200&h=1200&s=1', alt: 'L\'interno del Dice Saloon' }
-                ]
-            },
-            {
-                day: 7,
-                date: "Giovedì 18/09",
-                title: "Cuore dei Cotswolds 🏡🚜",
-                summary: "Villaggi da cartolina e un tocco di cultura pop alla birreria di Jeremy Clarkson.",
-                accommodation: { name: "The Bay Tree Hotel", location: "Burford" },
-                driving: { from: "Lyndhurst", to: "Bourton > Burford", time: 125 },
-                content: `<div class="space-y-6"><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Esplorazione dei Villaggi</h3><ul class="list-disc list-inside space-y-2 text-slate-700"><li><strong>Bourton-on-the-Water:</strong> Passeggiata nella "Venezia dei Cotswolds".</li><li><strong>Burford:</strong> Esplorazione della "porta dei Cotswolds" con la sua iconica High Street.</li></ul></div><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Hawkstone Brewery</h3><p class="text-slate-700">Visita e degustazione alla birreria resa famosa dalla serie "Clarkson's Farm". <strong>Consiglio fondamentale:</strong> i tour sono popolarissimi, prenota online con larghissimo anticipo!</p></div><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Sera e Alloggio</h3><p class="text-slate-700">Pernottamento a <strong>The Bay Tree Hotel</strong> a Burford, un magnifico edificio del XVI secolo che incarna il fascino country-chic dei Cotswolds.</p></div></div>`,
-                images: [
-                    { src: 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1a/60/aa/8e/caption.jpg?w=800&h=400&s=1', alt: 'I ponticelli di Bourton-on-the-Water' },
-                    { src: 'https://bradsbackpack.com/wp-content/uploads/2025/01/20241228_154320.webp', alt: 'La birreria Hawkstone' }
-                ]
-            },
-            {
-                day: 8,
-                date: "Venerdì 19/09",
-                title: "Verso Oxford 🎓🚶‍♂️",
-                summary: "Dalla quiete dei villaggi nascosti alla grandezza accademica della 'città dalle guglie sognanti'.",
-                accommodation: { name: "Mollie's Oxfordshire", location: "Oxfordshire" },
-                driving: { from: "Burford", to: "Kingham > Oxford", time: 60 },
-                content: `<div class="space-y-6"><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Mattina: I Cotswolds Nascosti</h3><p class="text-slate-700">Ultimo assaggio della campagna con una visita a <strong>Charlbury</strong> e <strong>Kingham</strong>, due villaggi autentici e meno battuti dal turismo di massa.</p></div><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Pomeriggio: Arrivo a Oxford</h3><p class="text-slate-700">Primo contatto con la città universitaria più antica del mondo anglofono, passeggiando tra i suoi celebri college.</p></div><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Sera e Alloggio</h3><p class="text-slate-700">Pernottamento da <strong>Mollie's Oxfordshire</strong>. Una scelta strategica e di stile: un moderno motel-diner con design curato da Soho House e ampio parcheggio gratuito, perfetto per chi viaggia in auto.</p></div></div>`,
-                images: [
-                    { src: 'https://swtdmsmedia.newmindmedia.com/wsimgs/Kingham_houses_green_OC_1677317706.jpg', alt: 'Un tipico cottage di Kingham' },
-                    { src: 'https://images.squarespace-cdn.com/content/v1/5d7b795d1d74f17f87f61893/1699891853792-WXBN41S37SO9SURY3XCA/P1010846.jpg', alt: 'Il design di Mollie\'s Oxfordshire' }
-                ]
-            },
-            {
-                day: 9,
-                date: "Sabato 20/09",
-                title: "Arrivederci, Inghilterra! 🛫👋",
-                summary: "Un ultimo assaggio della vita di Oxford prima del rientro.",
-                accommodation: { name: "N/A", location: "Ritorno a Roma" },
-                driving: { from: "Oxford", to: "Heathrow", time: 75 },
-                content: `<div class="space-y-6"><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Mattina a Oxford</h3><p class="text-slate-700">Mattinata libera per esplorare la città. Scegli tra un tour a piedi dell'università, una visita a Christ Church College (famoso per Harry Potter), o una rilassante gita in "punt" sul fiume Cherwell.</p></div><div><h3 class="text-xl font-semibold text-teal-700 mb-2">Pomeriggio: Partenza</h3><ul class="list-disc list-inside space-y-2 text-slate-700"><li><strong>17:00 circa:</strong> Partenza per l'aeroporto di <strong>Londra Heathrow (LHR)</strong>.</li><li><strong>Trasferimento:</strong> Il viaggio dura circa 1h - 1h 30m. Parti con largo anticipo.</li><li>Riconsegna dell'auto e volo di ritorno per Roma.</li></ul></div></div>`,
-                images: [
-                    { src: 'https://www.bodleian.ox.ac.uk/sites/default/files/bodreader/images/page/bodleian_by_john_cairns_16.9.19-2.jpg', alt: 'La Radcliffe Camera a Oxford' },
-                    { src: 'https://morrisoxford.co.uk/wp-content/uploads/CamPunt.jpg', alt: 'Punting sul fiume Cherwell' }
-                ]
-            }
-        ];
+        function revealGift() {
+            document.getElementById('page1').style.display = 'none';
+            document.getElementById('id-del-regalo').style.display = 'block';
+            window.scrollTo(0,0);
+            initAllScratchCards();
+        }
 
-        const locations = {
-            heathrow: { lat: 51.4700, lng: -0.4543, title: "London Heathrow", desc: "Punto di partenza e arrivo." },
-            whitstable: { lat: 51.3605, lng: 1.0253, title: "Whitstable", desc: "Twentieth Century B&B" },
-            margate: { lat: 51.3858, lng: 1.3839, title: "Margate & Botany Bay", desc: "Cultura, libri e scogliere." },
-            deal: { lat: 51.2221, lng: 1.4034, title: "Deal", desc: "The Rose Hotel & Deal Castle" },
-            dover: { lat: 51.1297, lng: 1.3111, title: "Dover", desc: "Dover Castle" },
-            portLympne: { lat: 51.0717, lng: 0.9507, title: "Port Lympne", desc: "Safari Park" },
-            sevenSisters: { lat: 50.7544, lng: 0.1519, title: "Seven Sisters", desc: "Beachy Head & Coastguard Cottages" },
-            eastbourne: { lat: 50.7930, lng: 0.2860, title: "Eastbourne", desc: "Port Hotel" },
-            brighton: { lat: 50.8225, lng: -0.1372, title: "Brighton", desc: "Royal Pavilion & Gin Distillery" },
-            lyndhurst: { lat: 50.8732, lng: -1.5768, title: "Lyndhurst", desc: "The Crown Hotel" },
-            bourton: { lat: 51.8845, lng: -1.7583, title: "Bourton-on-the-Water", desc: "La 'Venezia dei Cotswolds'" },
-            burford: { lat: 51.8080, lng: -1.6370, title: "Burford", desc: "The Bay Tree Hotel & Hawkstone Brewery" },
-            oxford: { lat: 51.7520, lng: -1.2577, title: "Oxford", desc: "La città delle guglie sognanti" },
-            mollies: { lat: 51.7946, lng: -1.3506, title: "Mollie's Oxfordshire", desc: "Ultima notte" }
-        };
-
-        const map = L.map('map').setView([51.3, -0.1], 7.5);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 20
-        }).addTo(map);
-
-        Object.values(locations).forEach(loc => {
-            L.marker([loc.lat, loc.lng]).addTo(map)
-                .bindPopup(`<b>${loc.title}</b><br>${loc.desc}`);
-        });
-
-        const routeCoords = [
-            locations.heathrow, locations.whitstable, locations.margate, locations.dover, locations.deal,
-            locations.portLympne, locations.sevenSisters, locations.eastbourne, locations.brighton, locations.lyndhurst,
-            locations.bourton, locations.burford, locations.mollies, locations.oxford, locations.heathrow
-        ].map(loc => [loc.lat, loc.lng]);
-        const polyline = L.polyline(routeCoords, { color: 'var(--accent-secondary)', weight: 3, opacity: 0.8 }).addTo(map);
-        map.fitBounds(polyline.getBounds().pad(0.1));
-
-        const tabNav = document.getElementById('tab-navigation');
-        const contentContainer = document.getElementById('content-container');
-        const accommodationTableBody = document.getElementById('accommodation-table-body');
-        const drivingTimesContainer = document.getElementById('driving-times-container');
-        
-        const maxDrivingTime = Math.max(...itineraryData.map(d => d.driving.time));
-
-        itineraryData.forEach((dayData, index) => {
-            const tabButton = document.createElement('button');
-            tabButton.className = `tab-button whitespace-nowrap py-4 px-2 border-b-2 font-medium text-sm ${index === 0 ? 'active' : ''}`;
-            tabButton.textContent = `Giorno ${dayData.day}`;
-            tabButton.dataset.day = dayData.day;
-            tabNav.appendChild(tabButton);
-
-            const contentPanel = document.createElement('div');
-            contentPanel.id = `day-content-${dayData.day}`;
-            contentPanel.className = `content-panel ${index === 0 ? 'active' : ''}`;
-            
-            let imageGalleryHTML = '';
-            if (dayData.images && dayData.images.length > 0) {
-                imageGalleryHTML = `
-                    <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        ${dayData.images.map(img => `
-                            <div>
-                                <img src="${img.src}" alt="${img.alt}" class="w-full h-48 object-cover rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300" onerror="this.onerror=null;this.src='https://placehold.co/600x400/ccc/999?text=Image+not+found';">
-                                <p class="text-center text-xs text-slate-500 mt-2">${img.alt}</p>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
-
-            contentPanel.innerHTML = `
-                <h3 class="text-2xl font-bold text-slate-900">${dayData.title}</h3>
-                <p class="mt-1 text-md text-slate-500 italic">${dayData.date} - ${dayData.summary}</p>
-                <div class="mt-6 border-t border-slate-200 pt-6">
-                    ${dayData.content}
-                    ${imageGalleryHTML}
-                </div>
-            `;
-            contentContainer.appendChild(contentPanel);
-            
-            if (dayData.accommodation.name !== 'N/A') {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-900">Giorno ${dayData.day}</td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-500">${dayData.accommodation.name}</td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-500">${dayData.accommodation.location}</td>
-                `;
-                accommodationTableBody.appendChild(row);
-            }
-
-            const percentage = (dayData.driving.time / maxDrivingTime) * 100;
-            const drivingTimeEl = document.createElement('div');
-            drivingTimeEl.innerHTML = `
-                <div class="flex justify-between items-center mb-1 text-sm">
-                    <span class="font-semibold text-slate-700">Giorno ${dayData.day}: ${dayData.driving.to}</span>
-                    <span class="font-medium text-slate-600">${dayData.driving.time} min</span>
-                </div>
-                <div class="w-full bg-slate-200 rounded-full h-4">
-                    <div class="driving-bar h-4 rounded-full" style="width: ${percentage}%" title="${dayData.driving.time} minuti"></div>
-                </div>
-            `;
-            drivingTimesContainer.appendChild(drivingTimeEl);
-
-        });
-
-        tabNav.addEventListener('click', (e) => {
-            if (e.target.matches('.tab-button')) {
-                const day = e.target.dataset.day;
+        // Funzione per inizializzare il gratta e vinci su ogni canvas
+        function initAllScratchCards() {
+            const canvases = document.querySelectorAll('.scratch-canvas');
+            canvases.forEach(canvas => {
+                const ctx = canvas.getContext('2d');
                 
-                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
+                // Colore del Gratta e Vinci (Argento festivo)
+                ctx.fillStyle = '#C0C0C0';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                document.querySelectorAll('.content-panel').forEach(panel => panel.classList.remove('active'));
-                document.getElementById(`day-content-${day}`).classList.add('active');
-            }
-        });
-    });
+                // Aggiungiamo un po' di "texture" al gratta e vinci
+                ctx.fillStyle = '#A0A0A0';
+                for(let i=0; i<100; i++) {
+                    ctx.fillRect(Math.random()*280, Math.random()*280, 2, 2);
+                }
+
+                let isDrawing = false;
+
+                function scratch(e) {
+                    if (!isDrawing) return;
+                    
+                    const rect = canvas.getBoundingClientRect();
+                    const x = (e.clientX || e.touches[0].clientX) - rect.left;
+                    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+                    
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 25, 0, Math.PI * 2); // Dimensione del "tocco"
+                    ctx.fill();
+                }
+
+                canvas.addEventListener('mousedown', () => isDrawing = true);
+                canvas.addEventListener('touchstart', () => isDrawing = true);
+                
+                window.addEventListener('mouseup', () => isDrawing = false);
+                window.addEventListener('touchend', () => isDrawing = false);
+
+                canvas.addEventListener('mousemove', scratch);
+                canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault(); // Impedisce lo scroll mentre gratta
+                    scratch(e);
+                });
+            });
+        }
+
+        // Nevicata
+        function createSnowflake() {
+            const snow = document.createElement('div');
+            snow.classList.add('snowflake');
+            snow.innerHTML = '&#10052;';
+            snow.style.left = Math.random() * 100 + 'vw';
+            snow.style.opacity = Math.random();
+            snow.style.fontSize = Math.random() * 1.5 + 0.5 + 'em';
+            snow.style.animationDuration = Math.random() * 3 + 2 + 's';
+            document.body.appendChild(snow);
+            setTimeout(() => snow.remove(), 5000);
+        }
+        setInterval(createSnowflake, 200);
     </script>
+
 </body>
 </html>
